@@ -17,7 +17,8 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
         else:
-            boy.handle_event(event)
+            if event.type in (SDL_KEYDOWN, SDL_KEYUP):
+                boy.handle_event(event)
 
 
 def reset_world():
@@ -53,6 +54,7 @@ def render_world():
 
 open_canvas()
 reset_world()
+
 # game loop
 while running:
     handle_events()
