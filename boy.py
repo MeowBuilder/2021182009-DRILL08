@@ -17,10 +17,10 @@ class Boy:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
             {
-                Idle : { time_out: Sleep, right_down: Run, left_down: Run,left_up: Run,right_up: Run, a_down: auto_run},
+                Idle : { time_out: Sleep, right_down: Run, left_down: Run,left_up: Run,right_up: Run, a_down: Auto_run},
                 Sleep : { space_down: Idle, right_down: Run, left_down: Run,left_up: Run,right_up: Run},
                 Run : { right_down: Idle, left_down: Idle,left_up: Idle,right_up: Idle },
-                auto_run : { time_out: Idle}
+                Auto_run : { time_out: Idle, right_down: Run, left_down: Run,left_up: Run,right_up: Run }
             }
         )
 
@@ -48,6 +48,11 @@ class Idle:
         elif left_down(e) or right_up(e):
             boy.action = 3
             boy.face_dir = 1
+        elif time_out(e):
+            if boy.face_dir == 1:
+                boy.action = 3
+            else:
+                boy.action = 2
 
         boy.dir = 0
         boy.frame = 0
@@ -110,7 +115,7 @@ class Run:
 
     @staticmethod
     def do(boy):
-        boy.x += (boy.dir * 1)
+        boy.x += (boy.dir * 5)
         boy.frame = (boy.frame + 1) % 8
         pass
 
@@ -122,33 +127,35 @@ class Run:
             boy.image.clip_composite_draw(boy.frame * 100, boy.action * 100, 100, 100,0,'', boy.x, boy.y,100,100)
         pass
 
-class auto_run:
+class Auto_run:
     @staticmethod
     def enter(boy, e):
-        if right_down(e) or left_up(e):
-            boy.dir, boy.action = 1, 1
-        elif left_down(e) or right_up(e):
-            boy.dir, boy.action = -1, 0
-
         boy.start_time = get_time()
+        boy.dir = boy.face_dir
         pass
 
     @staticmethod
     def exit(boy, e):
+        boy.face_dir = boy.dir
         pass
 
     @staticmethod
     def do(boy):
-        if get_time() - boy.start_time > 3:
+        if get_time() - boy.start_time > 5:
             boy.state_machine.add_event(('TIME_OUT',0))
-        boy.x += (boy.dir * 1)
+            
+        boy.x += (boy.dir * 10)
         boy.frame = (boy.frame + 1) % 8
+        if boy.x >= 800:
+            boy.dir = -1
+        elif boy.x < 0:
+            boy.dir = 1
         pass
 
     @staticmethod
     def draw(boy):
         if boy.dir == 1:
-            boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+            boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y+25,200,200)
         else:
-            boy.image.clip_composite_draw(boy.frame * 100, boy.action * 100, 100, 100, 0, '', boy.x, boy.y, 200, 200)
+            boy.image.clip_composite_draw(boy.frame * 100, 0, 100, 100, 0, '', boy.x, boy.y+25, 200, 200)
         pass
